@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocialPulse OS - Campaign & Deliverables Manager</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.4); }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-30 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo & Slogan -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="navigate('clients')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div>
+          <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">SocialPulse OS</span>
+          <span class="hidden sm:inline-block ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-400 border border-indigo-800/60">Campaign HQ</span>
+        </div>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div class="flex-1 max-w-md hidden md:block">
+        <div class="relative">
+          <svg class="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" id="globalSearchInput" oninput="handleGlobalSearch(this.value)" placeholder="Search clients, campaigns, deliverables, tags..." 
+            class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-1.5 text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition">
+        </div>
+      </div>
+
+      <!-- Header Action Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- View Tabs -->
+        <div class="flex items-center bg-slate-800/90 p-1 rounded-xl border border-slate-700/60 text-xs font-medium">
+          <button id="viewBtn-explorer" onclick="switchMainTab('explorer')" class="px-3 py-1.5 rounded-lg transition text-white bg-indigo-600 shadow-sm">
+            Hierarchy
+          </button>
+          <button id="viewBtn-milestones" onclick="switchMainTab('milestones')" class="px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white">
+            Milestones
+          </button>
+          <button id="viewBtn-deliverables" onclick="switchMainTab('deliverables')" class="px-3 py-1.5 rounded-lg transition text-slate-400 hover:text-white">
+            Content Hub
+          </button>
+        </div>
+
+        <!-- Data Ops Dropdown Menu Trigger -->
+        <div class="relative">
+          <button onclick="toggleDropdown('dataOpsMenu')" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition" title="Data Backup & Demo Options">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+          </button>
+          <div id="dataOpsMenu" class="hidden absolute right-0 mt-2 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1 z-40">
+            <button onclick="exportData()" class="w-full text-left px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export JSON Backup
+            </button>
+            <label class="w-full text-left px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 flex items-center gap-2 cursor-pointer">
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/></svg>
+              Import Backup File
+              <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
+            </label>
+            <div class="border-t border-slate-800 my-1"></div>
+            <button onclick="loadSampleData()" class="w-full text-left px-4 py-2 text-xs font-medium text-indigo-400 hover:bg-slate-800 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              Load Demo Template
+            </button>
+            <button onclick="clearAllDataWithConfirm()" class="w-full text-left px-4 py-2 text-xs font-medium text-red-400 hover:bg-slate-800 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Reset All Storage
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Interactive Breadcrumb Bar -->
+  <div class="bg-slate-900/50 border-b border-slate-800/80 px-4 sm:px-6 lg:px-8 py-2.5">
+    <div class="max-w-7xl mx-auto flex items-center gap-2 text-xs sm:text-sm text-slate-400 overflow-x-auto whitespace-nowrap" id="breadcrumbBar">
+      <!-- Injected dynamically -->
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- TAB 1: EXPLORER VIEW (Clients -> Projects -> Campaigns -> Deliverables) -->
+    <div id="tab-explorer" class="space-y-6">
+
+      <!-- Level 1: Clients Grid -->
+      <section id="view-clients" class="space-y-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              <span>Client Accounts</span>
+              <span id="clientCountBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Manage organizations, retainers, and client accounts</p>
+          </div>
+          <button onclick="openModal('clientModal')" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition shadow-lg shadow-indigo-600/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Add New Client
+          </button>
+        </div>
+
+        <div id="clientsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+      <!-- Level 2: Client's Projects -->
+      <section id="view-projects" class="space-y-4 hidden">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="projectClientBadge" class="text-xs px-2.5 py-0.5 rounded-md font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">Client</span>
+              <h2 id="projectClientHeading" class="text-xl sm:text-2xl font-bold text-white">Projects</h2>
+            </div>
+            <p id="projectClientDesc" class="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl"></p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="navigate('clients')" class="px-3 py-2 text-xs font-medium rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+              &larr; Back to Clients
+            </button>
+            <button onclick="openModal('projectModal')" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition shadow-lg shadow-indigo-600/20">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              Add Project
+            </button>
+          </div>
+        </div>
+
+        <div id="projectsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+      <!-- Level 3: Project's Campaigns -->
+      <section id="view-campaigns" class="space-y-4 hidden">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="campaignProjectBadge" class="text-xs px-2.5 py-0.5 rounded-md font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Project</span>
+              <h2 id="campaignProjectHeading" class="text-xl sm:text-2xl font-bold text-white">Campaigns</h2>
+            </div>
+            <p id="campaignProjectDesc" class="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl"></p>
+            <!-- Platform chips for this project -->
+            <div id="campaignProjectPlatforms" class="flex flex-wrap gap-1.5 mt-2"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="navigate('projects', currentClientId)" class="px-3 py-2 text-xs font-medium rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+              &larr; Back to Projects
+            </button>
+            <button onclick="openModal('campaignModal')" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition shadow-lg shadow-indigo-600/20">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              New Campaign
+            </button>
+          </div>
+        </div>
+
+        <div id="campaignsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+      <!-- Level 4: Campaign's Deliverables & Asset Log -->
+      <section id="view-deliverables" class="space-y-5 hidden">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="deliverableCampaignStatusBadge" class="text-xs px-2.5 py-0.5 rounded-md font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/30">Status</span>
+              <h2 id="deliverableCampaignHeading" class="text-xl sm:text-2xl font-bold text-white">Campaign Deliverables</h2>
+            </div>
+            <p id="deliverableCampaignObjective" class="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl"></p>
+            <!-- Timeline summary pills -->
+            <div id="deliverableCampaignTimelineBar" class="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-300"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="navigate('campaigns', currentProjectId)" class="px-3 py-2 text-xs font-medium rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+              &larr; Back to Campaigns
+            </button>
+            <button onclick="openModal('deliverableModal')" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition shadow-lg shadow-indigo-600/20">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              Add Deliverable
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter bar inside deliverables view -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span class="text-slate-400 font-medium">Filter by Platform:</span>
+            <select id="deliverablePlatformFilter" onchange="renderDeliverablesView()" class="bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none">
+              <option value="ALL">All Platforms</option>
+              <!-- Filled via JS -->
+            </select>
+
+            <span class="text-slate-400 font-medium ml-2">Status:</span>
+            <select id="deliverableStatusFilter" onchange="renderDeliverablesView()" class="bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none">
+              <option value="ALL">All Statuses</option>
+              <option value="Idea">Idea / Planned</option>
+              <option value="In Review">In Review</option>
+              <option value="Ready to Post">Ready to Post</option>
+              <option value="Published">Published</option>
+            </select>
+          </div>
+
+          <div class="text-xs text-slate-400">
+            Total Content Items: <span id="deliverableCountText" class="font-bold text-white">0</span>
+          </div>
+        </div>
+
+        <!-- Deliverables Cards List -->
+        <div id="deliverablesList" class="space-y-3">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- TAB 2: MILESTONES & TIMELINE BOARD -->
+    <div id="tab-milestones" class="space-y-6 hidden">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-2xl font-bold text-white">Milestone & Timeline Tracker</h2>
+          <p class="text-sm text-slate-400">High-level schedule across all active campaigns: Production &rarr; Launch &rarr; Monitor &rarr; End</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="timelineClientFilter" onchange="renderTimelineView()" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200">
+            <option value="ALL">All Clients</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Timeline cards list -->
+      <div id="timelineContainer" class="space-y-4">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- TAB 3: GLOBAL DELIVERABLES HUB -->
+    <div id="tab-deliverables-hub" class="space-y-6 hidden">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-2xl font-bold text-white">Global Content & Deliverables Hub</h2>
+          <p class="text-sm text-slate-400">Directly monitor all reels, videos, image posts, threads, and cloud storage links across every client</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="hubPlatformFilter" onchange="renderGlobalHub()" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200">
+            <option value="ALL">All Platforms</option>
+          </select>
+          <select id="hubFormatFilter" onchange="renderGlobalHub()" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200">
+            <option value="ALL">All Formats</option>
+            <option value="Reel / Short-form Video">Reel / Short-form Video</option>
+            <option value="Long-form Video">Long-form Video</option>
+            <option value="Single Image Post">Single Image Post</option>
+            <option value="Carousel / Multi-image">Carousel / Multi-image</option>
+            <option value="Thread">Thread</option>
+            <option value="Comment / Community Reply">Comment / Reply</option>
+            <option value="Conversation / AMA / Live">Conversation / AMA / Live</option>
+            <option value="Other">Other Format</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="globalHubGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================== MODALS ======================== -->
+
+  <!-- 1. CLIENT MODAL -->
+  <div id="clientModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
+      <h3 id="clientModalTitle" class="text-lg font-bold text-white mb-4">Add New Client Account</h3>
+      <form id="clientForm" onsubmit="handleClientSubmit(event)" class="space-y-4">
+        <input type="hidden" id="clientId">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Client / Brand Name *</label>
+          <input type="text" id="clientName" required placeholder="e.g. Acme Health Corp" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Contact Email</label>
+            <input type="email" id="clientEmail" placeholder="marketing@acme.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Brand Accent Color</label>
+            <select id="clientColor" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+              <option value="indigo">Indigo Accent</option>
+              <option value="emerald">Emerald Accent</option>
+              <option value="purple">Purple Accent</option>
+              <option value="rose">Rose Accent</option>
+              <option value="amber">Amber Accent</option>
+              <option value="cyan">Cyan Accent</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Company Details / Notes</label>
+          <textarea id="clientNotes" rows="3" placeholder="Contract scope, target demographic, primary audience..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('clientModal')" class="px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-600/30 transition">Save Client</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. PROJECT MODAL -->
+  <div id="projectModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
+      <h3 id="projectModalTitle" class="text-lg font-bold text-white mb-4">Add Project</h3>
+      <form id="projectForm" onsubmit="handleProjectSubmit(event)" class="space-y-4">
+        <input type="hidden" id="projectId">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Project Title *</label>
+          <input type="text" id="projectTitle" required placeholder="e.g. Q4 Brand Awareness & Product Launch" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Target Goal / Summary</label>
+          <input type="text" id="projectGoal" placeholder="Drive 25,000 signups via multi-platform push" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        
+        <!-- Social Media Platforms Selector -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Active Social Media Platforms for this Project</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-950/40 p-3 rounded-xl border border-slate-800 text-xs" id="projectPlatformCheckboxes">
+            <!-- Injected via JS based on predefined list -->
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <span class="text-xs text-slate-400">Custom Other Platform:</span>
+            <input type="text" id="projectCustomPlatform" placeholder="e.g. Twitch, WhatsApp, Medium" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Notes / Budget Reference</label>
+          <textarea id="projectNotes" rows="2" placeholder="Budget allocation, creative guidelines, milestone remarks..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('projectModal')" class="px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-600/30 transition">Save Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. CAMPAIGN MODAL -->
+  <div id="campaignModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl p-6 relative">
+      <h3 id="campaignModalTitle" class="text-lg font-bold text-white mb-4">Add Campaign</h3>
+      <form id="campaignForm" onsubmit="handleCampaignSubmit(event)" class="space-y-4">
+        <input type="hidden" id="campaignId">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Campaign Title *</label>
+            <input type="text" id="campaignTitle" required placeholder="e.g. Black Friday Super Blitz" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Status</label>
+            <select id="campaignStatus" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+              <option value="Draft">Draft</option>
+              <option value="Production">Production</option>
+              <option value="Launched">Launched</option>
+              <option value="Monitoring">Monitoring</option>
+              <option value="Completed">Completed</option>
+              <option value="Archived">Archived</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Campaign Objective & Core Theme</label>
+          <input type="text" id="campaignObjective" placeholder="Promote 40% discount with hook reels and influencer reposts" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+        </div>
+
+        <!-- 4 Key Required Dates -->
+        <div class="p-3.5 bg-slate-950/50 rounded-xl border border-slate-800 space-y-3">
+          <span class="block text-xs font-semibold uppercase tracking-wider text-indigo-400">Campaign Timeline Milestones</span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">1. Production Date</label>
+              <input type="date" id="dateProduction" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">2. Launch Date</label>
+              <input type="date" id="dateLaunch" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">3. Monitor Date</label>
+              <input type="date" id="dateMonitor" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">4. End Date</label>
+              <input type="date" id="dateEnd" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('campaignModal')" class="px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-600/30 transition">Save Campaign</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. DELIVERABLE / CONTENT LOG MODAL -->
+  <div id="deliverableModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+      <h3 id="deliverableModalTitle" class="text-lg font-bold text-white mb-4">Add Content Deliverable</h3>
+      <form id="deliverableForm" onsubmit="handleDeliverableSubmit(event)" class="space-y-4">
+        <input type="hidden" id="deliverableId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Target Platform *</label>
+            <select id="deliverablePlatform" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+              <!-- Injected dynamically from project platforms or general -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Deliverable Format / Type *</label>
+            <select id="deliverableFormat" onchange="checkCustomFormat(this.value)" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+              <option value="Reel / Short-form Video">Reel / Short-form Video (9:16)</option>
+              <option value="Long-form Video">Long-form Video (16:9)</option>
+              <option value="Single Image Post">Single Image Post</option>
+              <option value="Carousel / Multi-image">Carousel / Multi-image</option>
+              <option value="Thread">Thread</option>
+              <option value="Comment / Community Reply">Comment / Community Reply</option>
+              <option value="Conversation / AMA / Live">Conversation / AMA / Live</option>
+              <option value="Other">Other (Custom specification)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="customFormatRow" class="hidden">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Specify Custom Format Name</label>
+          <input type="text" id="deliverableCustomFormat" placeholder="e.g. Infographic PDF, Interactive Poll, Newsletter Banner" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Content Title / Hook / Identifier *</label>
+          <input type="text" id="deliverableTitle" required placeholder="e.g. '5 Mistakes to Avoid' Hook Reel" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <!-- Cloud Storage Link (Dropbox, Drive, Frame.io, Figma, etc.) -->
+        <div class="p-3.5 bg-slate-950/60 rounded-xl border border-indigo-900/40 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-indigo-300">Cloud Storage / Asset Link</label>
+            <span class="text-[11px] text-slate-400">Dropbox, Google Drive, Frame.io, OneDrive, etc.</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <svg class="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+              <input type="url" id="deliverableFileUrl" placeholder="https://www.dropbox.com/scl/fo/... or drive.google.com/..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Specifications & Required Asset Checklist -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Required File Specs & Technical Details</label>
+          <input type="text" id="deliverableSpecs" placeholder="e.g. 1080x1920 MP4, 30fps, burned-in captions, clean master + thumbnail JPG" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Content Status</label>
+            <select id="deliverableStatus" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+              <option value="Idea">Idea / Planned</option>
+              <option value="In Review">In Review / Drafting</option>
+              <option value="Ready to Post">Ready to Post (Assets Verified)</option>
+              <option value="Published">Published & Live</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Target Scheduled Date (Optional)</label>
+            <input type="date" id="deliverableScheduledDate" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Deliverable Notes / Copy / Caption</label>
+          <textarea id="deliverableNotes" rows="2" placeholder="Copy draft, call to action, tag accounts, hashtags..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('deliverableModal')" class="px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-600/30 transition">Save Deliverable</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. CONFIRMATION MODAL (Replaces default confirm dialogs) -->
+  <div id="confirmModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center">
+      <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <h4 id="confirmModalTitle" class="text-base font-bold text-white mb-1">Confirm Action</h4>
+      <p id="confirmModalMessage" class="text-xs text-slate-400 mb-5">Are you sure you want to proceed? This cannot be undone.</p>
+      <div class="flex items-center justify-center gap-3">
+        <button id="confirmCancelBtn" class="px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition">Cancel</button>
+        <button id="confirmExecuteBtn" class="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-500 rounded-xl shadow-lg shadow-red-600/30 transition">Confirm Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT LOGIC -->
+  <script>
+    /* ==========================================================================
+       1. CONSTANTS & SYSTEM PRESETS
+       ========================================================================== */
+    const STORAGE_KEY = 'socialpulse_os_data_v1';
+
+    // Specified platforms list including user requests and additions
+    const PLATFORMS_LIST = [
+      { id: 'youtube', name: 'YouTube', color: '#FF0000', badgeClass: 'bg-red-500/10 text-red-400 border-red-500/20' },
+      { id: 'facebook', name: 'Facebook', color: '#1877F2', badgeClass: 'bg-blue-600/10 text-blue-400 border-blue-600/20' },
+      { id: 'instagram', name: 'Instagram', color: '#E4405F', badgeClass: 'bg-pink-500/10 text-pink-400 border-pink-500/20' },
+      { id: 'tiktok', name: 'TikTok', color: '#00F2FE', badgeClass: 'bg-teal-500/10 text-teal-300 border-teal-500/20' },
+      { id: 'reddit', name: 'Reddit', color: '#FF4500', badgeClass: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
+      { id: 'pinterest', name: 'Pinterest', color: '#BD081C', badgeClass: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
+      { id: 'discord', name: 'Discord', color: '#5865F2', badgeClass: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20' },
+      { id: 'substack', name: 'Substack', color: '#FF6719', badgeClass: 'bg-amber-600/10 text-amber-400 border-amber-600/20' },
+      { id: 'x', name: 'X (Twitter)', color: '#FFFFFF', badgeClass: 'bg-slate-300/10 text-slate-200 border-slate-300/20' },
+      { id: 'linkedin', name: 'LinkedIn', color: '#0A66C2', badgeClass: 'bg-sky-600/10 text-sky-400 border-sky-600/20' },
+      { id: 'threads', name: 'Threads', color: '#EEEEEE', badgeClass: 'bg-zinc-500/10 text-zinc-300 border-zinc-500/20' },
+      { id: 'other', name: 'Other', color: '#A855F7', badgeClass: 'bg-purple-500/10 text-purple-300 border-purple-500/20' }
+    ];
+
+    /* ==========================================================================
+       2. STATE & INITIALIZATION
+       ========================================================================== */
+    let appData = {
+      clients: [],
+      projects: [],
+      campaigns: [],
+      deliverables: []
+    };
+
+    // Active Navigation Pointers
+    let currentClientId = null;
+    let currentProjectId = null;
+    let currentCampaignId = null;
+    let currentActiveView = 'clients'; // 'clients' | 'projects' | 'campaigns' | 'deliverables'
+    let currentMainTab = 'explorer';   // 'explorer' | 'milestones' | 'deliverables'
+    let globalSearchQuery = '';
+
+    // Init on DOM ready
+    window.onload = function() {
+      loadStoredData();
+      renderPlatformCheckboxes();
+      populateDeliverablePlatformOptions();
+      populateFilterPlatformOptions();
+
+      // If storage is empty, populate with initial friendly sample
+      if (appData.clients.length === 0) {
+        loadSampleData(false);
+      } else {
+        refreshCurrentView();
+      }
+    };
+
+    /* ==========================================================================
+       3. STORAGE MANAGEMENT
+       ========================================================================== */
+    function loadStoredData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          appData = JSON.parse(raw);
+          // Safety ensure arrays exist
+          if (!appData.clients) appData.clients = [];
+          if (!appData.projects) appData.projects = [];
+          if (!appData.campaigns) appData.campaigns = [];
+          if (!appData.deliverables) appData.deliverables = [];
+        }
+      } catch (e) {
+        console.error("Failed to load local storage:", e);
+        showToast("Storage error, resetting state.", "error");
+      }
+    }
+
+    function saveToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      } catch (e) {
+        console.error("Failed to write to local storage:", e);
+        showToast("Could not save changes to browser storage.", "error");
+      }
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `SocialPulse_OS_Backup_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      toggleDropdown('dataOpsMenu', false);
+      showToast("JSON database backup downloaded!");
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && Array.isArray(parsed.clients)) {
+            appData = parsed;
+            saveToStorage();
+            navigate('clients');
+            refreshCurrentView();
+            showToast("Database successfully restored from JSON!");
+          } else {
+            showToast("Invalid JSON structure.", "error");
+          }
+        } catch (err) {
+          showToast("Error parsing JSON file.", "error");
+        }
+      };
+      reader.readAsText(file);
+      toggleDropdown('dataOpsMenu', false);
+      event.target.value = '';
+    }
+
+    function clearAllDataWithConfirm() {
+      toggleDropdown('dataOpsMenu', false);
+      showConfirmDialog("Reset Entire Database?", "Are you sure you want to delete all clients, projects, campaigns, and content deliverables? This action cannot be undone.", () => {
+        appData = { clients: [], projects: [], campaigns: [], deliverables: [] };
+        saveToStorage();
+        currentClientId = null;
+        currentProjectId = null;
+        currentCampaignId = null;
+        navigate('clients');
+        showToast("All data cleared.");
+      });
+    }
+
+    /* ==========================================================================
+       4. SEED / DEMO DATA LOADER
+       ========================================================================== */
+    function loadSampleData(showNotification = true) {
+      appData = {
+        clients: [
+          {
+            id: 'c1',
+            name: 'Apex Athletic Co.',
+            email: 'agency-lead@apexathletic.com',
+            color: 'indigo',
+            notes: 'High-performance activewear brand focusing on Gen-Z & Millennial runners and lifters.'
+          },
+          {
+            id: 'c2',
+            name: 'Nova Kitchenware',
+            email: 'partnerships@novakitchen.io',
+            color: 'emerald',
+            notes: 'Eco-friendly non-toxic cast iron & ceramic cookware.'
+          }
+        ],
+        projects: [
+          {
+            id: 'p1',
+            clientId: 'c1',
+            title: 'Q4 Global Brand Awareness & Velocity Drop',
+            goal: 'Drive 200,000 product page visits and build momentum for new carbon-fiber trail runners.',
+            notes: 'Main creative theme: "Defy Every Terrain". Collaboration with 12 athlete ambassadors.',
+            platforms: ['YouTube', 'Instagram', 'TikTok', 'Reddit', 'Threads', 'X (Twitter)']
+          },
+          {
+            id: 'p2',
+            clientId: 'c2',
+            title: 'Holiday Recipe & Dutch Oven Push',
+            goal: 'Capture seasonal holiday gifting market with cooking tutorials and creator bundles.',
+            notes: 'Highlight non-stick ceramic test certifications.',
+            platforms: ['Pinterest', 'Instagram', 'YouTube', 'Substack', 'Facebook']
+          }
+        ],
+        campaigns: [
+          {
+            id: 'cmp1',
+            projectId: 'p1',
+            title: 'Trailblazer Series Launch',
+            objective: 'Build viral anticipation for Carbon Trail-Runner footwear with high-octane action clips.',
+            status: 'Monitoring',
+            dateProduction: '2026-10-01',
+            dateLaunch: '2026-10-10',
+            dateMonitor: '2026-10-18',
+            dateEnd: '2026-10-31'
+          },
+          {
+            id: 'cmp2',
+            projectId: 'p1',
+            title: 'Black Friday Teaser & VIP Access',
+            objective: 'Exclusive early VIP code signups via Discord and Instagram Stories.',
+            status: 'Production',
+            dateProduction: '2026-10-25',
+            dateLaunch: '2026-11-15',
+            dateMonitor: '2026-11-22',
+            dateEnd: '2026-12-01'
+          },
+          {
+            id: 'cmp3',
+            projectId: 'p2',
+            title: 'Thanksgiving Sourdough & Stew Guide',
+            objective: 'Long-form and recipe pins directing traffic to holiday Dutch oven bundle discount.',
+            status: 'Launched',
+            dateProduction: '2026-09-28',
+            dateLaunch: '2026-10-12',
+            dateMonitor: '2026-10-20',
+            dateEnd: '2026-11-28'
+          }
+        ],
+        deliverables: [
+          {
+            id: 'd1',
+            campaignId: 'cmp1',
+            platform: 'Instagram',
+            format: 'Reel / Short-form Video',
+            title: 'Mud & Sprint Hook Video (Ambassador Cut)',
+            fileUrl: 'https://www.dropbox.com/scl/fo/apex-trail-reels-v2?preview=mud-sprint-9x16.mp4',
+            specs: '1080x1920 60fps MP4, burnt captions, sound synced to original audio track',
+            status: 'Published',
+            scheduledDate: '2026-10-10',
+            notes: 'CTA: Tap link in bio to join waitlist. Tag @ApexAthletic'
+          },
+          {
+            id: 'd2',
+            campaignId: 'cmp1',
+            platform: 'YouTube',
+            format: 'Long-form Video',
+            title: 'Engineered for Altitude: The Carbon Pro Documentary',
+            fileUrl: 'https://drive.google.com/drive/folders/apex-documentary-final-master',
+            specs: '3840x2160 4K ProRes 422 + SRT subtitle file + 3 custom thumbnail variations (1280x720)',
+            status: 'Published',
+            scheduledDate: '2026-10-12',
+            notes: 'Pinned comment contains timestamp chapters and athlete links.'
+          },
+          {
+            id: 'd3',
+            campaignId: 'cmp1',
+            platform: 'Reddit',
+            format: 'Thread',
+            title: 'r/Running AMA: We engineered a carbon-plated trail shoe without heel slippage',
+            fileUrl: 'https://docs.google.com/document/d/apex-reddit-ama-script-outline',
+            specs: 'Verified flair with moderator team, high-res cross section diagram JPG',
+            status: 'Ready to Post',
+            scheduledDate: '2026-10-18',
+            notes: 'Product designer Alex and athlete Sarah will be in the comments for 3 hours.'
+          },
+          {
+            id: 'd4',
+            campaignId: 'cmp2',
+            platform: 'TikTok',
+            format: 'Reel / Short-form Video',
+            title: 'Sneak Peek: What is in the Black Friday Vault?',
+            fileUrl: 'https://www.dropbox.com/scl/fo/apex-bf-teaser-rough-cut',
+            specs: '9:16 vertical video, 120fps slow-motion shots, trending sound selection',
+            status: 'In Review',
+            scheduledDate: '2026-11-15',
+            notes: 'Requires client sign-off on pricing disclosure.'
+          },
+          {
+            id: 'd5',
+            campaignId: 'cmp3',
+            platform: 'Pinterest',
+            format: 'Single Image Post',
+            title: 'Cast Iron Pot Roast Infographic Pin',
+            fileUrl: 'https://www.figma.com/file/nova-kitchen-holiday-pins',
+            specs: '1000x1500 px 2:3 ratio vertical graphic with recipe step breakdown',
+            status: 'Published',
+            scheduledDate: '2026-10-12',
+            notes: 'Links to holiday bundle checkout with coupon code FALLFEAST'
+          }
+        ]
+      };
+      saveToStorage();
+      if (showNotification) {
+        toggleDropdown('dataOpsMenu', false);
+        navigate('clients');
+        showToast("Demo agency template loaded!");
+      }
+    }
+
+    /* ==========================================================================
+       5. NAVIGATION & ROUTING
+       ========================================================================== */
+    function switchMainTab(tabName) {
+      currentMainTab = tabName;
+      
+      const tabExplorer = document.getElementById('tab-explorer');
+      const tabMilestones = document.getElementById('tab-milestones');
+      const tabDeliverables = document.getElementById('tab-deliverables-hub');
+      
+      const btnExplorer = document.getElementById('viewBtn-explorer');
+      const btnMilestones = document.getElementById('viewBtn-milestones');
+      const btnDeliverables = document.getElementById('viewBtn-deliverables');
+
+      // Reset active button styling
+      [btnExplorer, btnMilestones, btnDeliverables].forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-400');
+      });
+
+      tabExplorer.classList.add('hidden');
+      tabMilestones.classList.add('hidden');
+      tabDeliverables.classList.add('hidden');
+
+      if (tabName === 'explorer') {
+        tabExplorer.classList.remove('hidden');
+        btnExplorer.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+        btnExplorer.classList.remove('text-slate-400');
+        refreshCurrentView();
+      } else if (tabName === 'milestones') {
+        tabMilestones.classList.remove('hidden');
+        btnMilestones.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+        btnMilestones.classList.remove('text-slate-400');
+        renderTimelineView();
+      } else if (tabName === 'deliverables') {
+        tabDeliverables.classList.remove('hidden');
+        btnDeliverables.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+        btnDeliverables.classList.remove('text-slate-400');
+        renderGlobalHub();
+      }
+      renderBreadcrumbs();
+    }
+
+    function navigate(view, id = null) {
+      if (currentMainTab !== 'explorer') {
+        switchMainTab('explorer');
+      }
+
+      currentActiveView = view;
+      if (view === 'clients') {
+        currentClientId = null;
+        currentProjectId = null;
+        currentCampaignId = null;
+      } else if (view === 'projects') {
+        currentClientId = id || currentClientId;
+        currentProjectId = null;
+        currentCampaignId = null;
+      } else if (view === 'campaigns') {
+        currentProjectId = id || currentProjectId;
+        // set client id from project if needed
+        const proj = appData.projects.find(p => p.id === currentProjectId);
+        if (proj) currentClientId = proj.clientId;
+        currentCampaignId = null;
+      } else if (view === 'deliverables') {
+        currentCampaignId = id || currentCampaignId;
+        const cmp = appData.campaigns.find(c => c.id === currentCampaignId);
+        if (cmp) {
+          currentProjectId = cmp.projectId;
+          const prj = appData.projects.find(p => p.id === cmp.projectId);
+          if (prj) currentClientId = prj.clientId;
+        }
+      }
+
+      // Hide all sub views
+      document.getElementById('view-clients').classList.add('hidden');
+      document.getElementById('view-projects').classList.add('hidden');
+      document.getElementById('view-campaigns').classList.add('hidden');
+      document.getElementById('view-deliverables').classList.add('hidden');
+
+      // Show target sub view
+      document.getElementById(`view-${view}`).classList.remove('hidden');
+
+      renderBreadcrumbs();
+      refreshCurrentView();
+    }
+
+    function refreshCurrentView() {
+      if (currentActiveView === 'clients') {
+        renderClientsView();
+      } else if (currentActiveView === 'projects') {
+        renderProjectsView();
+      } else if (currentActiveView === 'campaigns') {
+        renderCampaignsView();
+      } else if (currentActiveView === 'deliverables') {
+        renderDeliverablesView();
+      }
+    }
+
+    function renderBreadcrumbs() {
+      const container = document.getElementById('breadcrumbBar');
+      let html = `
+        <button onclick="navigate('clients')" class="hover:text-indigo-400 transition font-medium flex items-center gap-1.5 ${currentActiveView === 'clients' ? 'text-white font-semibold' : ''}">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Clients
+        </button>
+      `;
+
+      if (currentClientId) {
+        const client = appData.clients.find(c => c.id === currentClientId);
+        if (client) {
+          html += `
+            <span class="text-slate-600">/</span>
+            <button onclick="navigate('projects', '${client.id}')" class="hover:text-indigo-400 transition ${currentActiveView === 'projects' ? 'text-white font-semibold' : ''}">
+              ${escapeHtml(client.name)}
+            </button>
+          `;
+        }
+      }
+
+      if (currentProjectId) {
+        const proj = appData.projects.find(p => p.id === currentProjectId);
+        if (proj) {
+          html += `
+            <span class="text-slate-600">/</span>
+            <button onclick="navigate('campaigns', '${proj.id}')" class="hover:text-indigo-400 transition ${currentActiveView === 'campaigns' ? 'text-white font-semibold' : ''}">
+              ${escapeHtml(proj.title)}
+            </button>
+          `;
+        }
+      }
+
+      if (currentCampaignId) {
+        const cmp = appData.campaigns.find(c => c.id === currentCampaignId);
+        if (cmp) {
+          html += `
+            <span class="text-slate-600">/</span>
+            <span class="text-indigo-300 font-semibold truncate max-w-xs">
+              ${escapeHtml(cmp.title)}
+            </span>
+          `;
+        }
+      }
+
+      container.innerHTML = html;
+    }
+
+    /* ==========================================================================
+       6. RENDER VIEWS
+       ========================================================================== */
+
+    // --- LEVEL 1: CLIENTS VIEW ---
+    function renderClientsView() {
+      const grid = document.getElementById('clientsGrid');
+      document.getElementById('clientCountBadge').innerText = appData.clients.length;
+
+      let filteredClients = appData.clients;
+      if (globalSearchQuery.trim()) {
+        const q = globalSearchQuery.toLowerCase();
+        filteredClients = filteredClients.filter(c => c.name.toLowerCase().includes(q) || (c.notes && c.notes.toLowerCase().includes(q)));
+      }
+
+      if (filteredClients.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/30">
+            <div class="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+            <h4 class="text-base font-semibold text-slate-300">No client accounts found</h4>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Get started by creating your first client or agency account.</p>
+            <button onclick="openModal('clientModal')" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition">
+              Create Client
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filteredClients.map(client => {
+        const projectCount = appData.projects.filter(p => p.clientId === client.id).length;
+        const campaignsCount = appData.campaigns.filter(c => {
+          const prj = appData.projects.find(p => p.id === c.projectId);
+          return prj && prj.clientId === client.id;
+        }).length;
+
+        const colorClasses = {
+          indigo: 'from-indigo-600/20 to-indigo-900/10 border-indigo-500/30 text-indigo-400',
+          emerald: 'from-emerald-600/20 to-emerald-900/10 border-emerald-500/30 text-emerald-400',
+          purple: 'from-purple-600/20 to-purple-900/10 border-purple-500/30 text-purple-400',
+          rose: 'from-rose-600/20 to-rose-900/10 border-rose-500/30 text-rose-400',
+          amber: 'from-amber-600/20 to-amber-900/10 border-amber-500/30 text-amber-400',
+          cyan: 'from-cyan-600/20 to-cyan-900/10 border-cyan-500/30 text-cyan-400'
+        }[client.color || 'indigo'];
+
+        return `
+          <div class="group relative bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 transition duration-200 shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${colorClasses} border flex items-center justify-center font-bold text-base shadow-sm">
+                    ${escapeHtml(client.name.charAt(0).toUpperCase())}
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-white group-hover:text-indigo-300 transition cursor-pointer" onclick="navigate('projects', '${client.id}')">
+                      ${escapeHtml(client.name)}
+                    </h3>
+                    <p class="text-xs text-slate-400 truncate max-w-[180px]">${escapeHtml(client.email || 'No email specified')}</p>
+                  </div>
+                </div>
+
+                <!-- Action Dropdown for Edit / Delete -->
+                <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition">
+                  <button onclick="editClient('${client.id}')" class="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition" title="Edit Client">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                  <button onclick="confirmDeleteClient('${client.id}')" class="p-1.5 hover:bg-red-500/20 rounded-lg text-slate-400 hover:text-red-400 transition" title="Delete Client">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-400 mt-3 line-clamp-2">${escapeHtml(client.notes || 'No description notes.')}</p>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3 text-slate-400">
+                <span><strong class="text-white font-semibold">${projectCount}</strong> Projects</span>
+                <span>&bull;</span>
+                <span><strong class="text-white font-semibold">${campaignsCount}</strong> Campaigns</span>
+              </div>
+              <button onclick="navigate('projects', '${client.id}')" class="inline-flex items-center gap-1 text-indigo-400 font-semibold hover:text-indigo-300 transition">
+                View &rarr;
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- LEVEL 2: PROJECTS VIEW ---
+    function renderProjectsView() {
+      const client = appData.clients.find(c => c.id === currentClientId);
+      if (!client) {
+        navigate('clients');
+        return;
+      }
+
+      document.getElementById('projectClientHeading').innerText = client.name;
+      document.getElementById('projectClientDesc').innerText = client.notes || 'Manage campaign projects, target platforms, and objectives.';
+
+      const grid = document.getElementById('projectsGrid');
+      let projects = appData.projects.filter(p => p.clientId === client.id);
+
+      if (globalSearchQuery.trim()) {
+        const q = globalSearchQuery.toLowerCase();
+        projects = projects.filter(p => p.title.toLowerCase().includes(q) || (p.goal && p.goal.toLowerCase().includes(q)));
+      }
+
+      if (projects.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/30">
+            <h4 class="text-base font-semibold text-slate-300">No projects created yet for ${escapeHtml(client.name)}</h4>
+            <p class="text-xs text-slate-500 mt-1">Start by creating an initiative or seasonal project.</p>
+            <button onclick="openModal('projectModal')" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition">
+              Create Project
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = projects.map(project => {
+        const campaignsCount = appData.campaigns.filter(c => c.projectId === project.id).length;
+        const platforms = project.platforms || [];
+
+        return `
+          <div class="bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 transition duration-200 shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="text-base font-bold text-white hover:text-indigo-300 transition cursor-pointer" onclick="navigate('campaigns', '${project.id}')">
+                  ${escapeHtml(project.title)}
+                </h3>
+                <div class="flex items-center gap-1">
+                  <button onclick="editProject('${project.id}')" class="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                  <button onclick="confirmDeleteProject('${project.id}')" class="p-1.5 hover:bg-red-500/20 rounded-lg text-slate-400 hover:text-red-400 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-300 mt-2 font-medium">${escapeHtml(project.goal || 'No specified goal')}</p>
+
+              <!-- Platforms configured badges -->
+              <div class="mt-3 flex flex-wrap gap-1.5">
+                ${platforms.map(p => `
+                  <span class="text-[11px] px-2 py-0.5 rounded-md font-medium bg-slate-800 text-slate-300 border border-slate-700/60">
+                    ${escapeHtml(p)}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs">
+              <span class="text-slate-400"><strong class="text-white">${campaignsCount}</strong> Active Campaigns</span>
+              <button onclick="navigate('campaigns', '${project.id}')" class="inline-flex items-center gap-1 text-indigo-400 font-semibold hover:text-indigo-300 transition">
+                Open Campaigns &rarr;
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- LEVEL 3: CAMPAIGNS VIEW ---
+    function renderCampaignsView() {
+      const project = appData.projects.find(p => p.id === currentProjectId);
+      if (!project) {
+        navigate('clients');
+        return;
+      }
+
+      document.getElementById('campaignProjectHeading').innerText = project.title;
+      document.getElementById('campaignProjectDesc').innerText = project.goal || project.notes || 'Manage scheduled marketing waves and milestones.';
+
+      // Render project platforms chips
+      const platformsCont = document.getElementById('campaignProjectPlatforms');
+      platformsCont.innerHTML = (project.platforms || []).map(p => `
+        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800/70">
+          ${escapeHtml(p)}
+        </span>
+      `).join('');
+
+      const grid = document.getElementById('campaignsGrid');
+      let campaigns = appData.campaigns.filter(c => c.projectId === project.id);
+
+      if (globalSearchQuery.trim()) {
+        const q = globalSearchQuery.toLowerCase();
+        campaigns = campaigns.filter(c => c.title.toLowerCase().includes(q) || (c.objective && c.objective.toLowerCase().includes(q)));
+      }
+
+      if (campaigns.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/30">
+            <h4 class="text-base font-semibold text-slate-300">No campaigns found in this project</h4>
+            <p class="text-xs text-slate-500 mt-1">Create a campaign wave to plan production, launch, and deliverables.</p>
+            <button onclick="openModal('campaignModal')" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition">
+              Create Campaign
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = campaigns.map(cmp => {
+        const deliverablesCount = appData.deliverables.filter(d => d.campaignId === cmp.id).length;
+        const statusColors = {
+          'Draft': 'bg-slate-700/40 text-slate-300 border-slate-600',
+          'Production': 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+          'Launched': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+          'Monitoring': 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+          'Completed': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+          'Archived': 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+        }[cmp.status || 'Draft'];
+
+        return `
+          <div class="bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 transition duration-200 shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full border ${statusColors}">
+                      ${escapeHtml(cmp.status)}
+                    </span>
+                  </div>
+                  <h3 class="text-base font-bold text-white hover:text-indigo-300 transition cursor-pointer" onclick="navigate('deliverables', '${cmp.id}')">
+                    ${escapeHtml(cmp.title)}
+                  </h3>
+                </div>
+
+                <div class="flex items-center gap-1">
+                  <button onclick="editCampaign('${cmp.id}')" class="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                  <button onclick="confirmDeleteCampaign('${cmp.id}')" class="p-1.5 hover:bg-red-500/20 rounded-lg text-slate-400 hover:text-red-400 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-400 mt-2">${escapeHtml(cmp.objective || 'No objective outlined')}</p>
+
+              <!-- Required 4 Timeline Milestones -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-center">
+                <div class="p-1">
+                  <span class="block text-[10px] font-semibold text-slate-500 uppercase">Production</span>
+                  <span class="text-xs font-medium text-slate-200">${formatDateNice(cmp.dateProduction)}</span>
+                </div>
+                <div class="p-1 border-l border-slate-800">
+                  <span class="block text-[10px] font-semibold text-emerald-400 uppercase">Launch</span>
+                  <span class="text-xs font-semibold text-white">${formatDateNice(cmp.dateLaunch)}</span>
+                </div>
+                <div class="p-1 border-l border-slate-800">
+                  <span class="block text-[10px] font-semibold text-sky-400 uppercase">Monitor</span>
+                  <span class="text-xs font-medium text-slate-200">${formatDateNice(cmp.dateMonitor)}</span>
+                </div>
+                <div class="p-1 border-l border-slate-800">
+                  <span class="block text-[10px] font-semibold text-slate-500 uppercase">End</span>
+                  <span class="text-xs font-medium text-slate-200">${formatDateNice(cmp.dateEnd)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs">
+              <span class="text-slate-400"><strong class="text-white">${deliverablesCount}</strong> Deliverables Logged</span>
+              <button onclick="navigate('deliverables', '${cmp.id}')" class="inline-flex items-center gap-1 text-indigo-400 font-semibold hover:text-indigo-300 transition">
+                Manage Content Assets &rarr;
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- LEVEL 4: DELIVERABLES & CONTENT LOG VIEW ---
+    function renderDeliverablesView() {
+      const cmp = appData.campaigns.find(c => c.id === currentCampaignId);
+      if (!cmp) {
+        navigate('clients');
+        return;
+      }
+
+      document.getElementById('deliverableCampaignHeading').innerText = cmp.title;
+      document.getElementById('deliverableCampaignStatusBadge').innerText = cmp.status;
+      document.getElementById('deliverableCampaignObjective').innerText = cmp.objective || 'Content deliverables and specifications pipeline.';
+
+      // Timeline summary
+      const timelineBar = document.getElementById('deliverableCampaignTimelineBar');
+      timelineBar.innerHTML = `
+        <span class="bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700/60">🔨 Prod: <strong class="text-white">${formatDateNice(cmp.dateProduction)}</strong></span>
+        <span class="bg-emerald-950/40 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-800/40">🚀 Launch: <strong class="text-white">${formatDateNice(cmp.dateLaunch)}</strong></span>
+        <span class="bg-sky-950/40 text-sky-300 px-2.5 py-1 rounded-lg border border-sky-800/40">📊 Monitor: <strong class="text-white">${formatDateNice(cmp.dateMonitor)}</strong></span>
+        <span class="bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700/60">🏁 End: <strong class="text-white">${formatDateNice(cmp.dateEnd)}</strong></span>
+      `;
+
+      // Filter deliverables
+      let items = appData.deliverables.filter(d => d.campaignId === cmp.id);
+      const platFilter = document.getElementById('deliverablePlatformFilter').value;
+      const statFilter = document.getElementById('deliverableStatusFilter').value;
+
+      if (platFilter !== 'ALL') items = items.filter(d => d.platform === platFilter);
+      if (statFilter !== 'ALL') items = items.filter(d => d.status === statFilter);
+
+      if (globalSearchQuery.trim()) {
+        const q = globalSearchQuery.toLowerCase();
+        items = items.filter(d => 
+          d.title.toLowerCase().includes(q) || 
+          (d.format && d.format.toLowerCase().includes(q)) ||
+          (d.specs && d.specs.toLowerCase().includes(q))
+        );
+      }
+
+      document.getElementById('deliverableCountText').innerText = items.length;
+      const list = document.getElementById('deliverablesList');
+
+      if (items.length === 0) {
+        list.innerHTML = `
+          <div class="py-16 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/30">
+            <h4 class="text-base font-semibold text-slate-300">No deliverables found</h4>
+            <p class="text-xs text-slate-500 mt-1">Add reels, carousels, long-form videos, or conversation threads to this campaign.</p>
+            <button onclick="openModal('deliverableModal')" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition">
+              Add First Deliverable
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = items.map(item => renderDeliverableCard(item, false)).join('');
+    }
+
+    // Helper to render individual deliverable item card
+    function renderDeliverableCard(item, showContext = false) {
+      let contextHeader = '';
+      if (showContext) {
+        const campaign = appData.campaigns.find(c => c.id === item.campaignId);
+        const project = campaign ? appData.projects.find(p => p.id === campaign.projectId) : null;
+        const client = project ? appData.clients.find(c => c.id === project.clientId) : null;
+        contextHeader = `
+          <div class="text-[11px] font-medium text-slate-400 mb-2 pb-2 border-b border-slate-800 flex items-center justify-between">
+            <span class="truncate">${escapeHtml(client ? client.name : '')} &bull; ${escapeHtml(campaign ? campaign.title : '')}</span>
+            <span class="text-slate-500">${formatDateNice(item.scheduledDate)}</span>
+          </div>
+        `;
+      }
+
+      const statusBadgeClasses = {
+        'Idea': 'bg-slate-800 text-slate-300 border-slate-700',
+        'In Review': 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+        'Ready to Post': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+        'Published': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+      }[item.status || 'Idea'];
+
+      // Platform badge styling
+      const platObj = PLATFORMS_LIST.find(p => p.name === item.platform) || { badgeClass: 'bg-slate-800 text-slate-300 border-slate-700' };
+
+      return `
+        <div class="bg-slate-900 border border-slate-800 hover:border-slate-700/80 rounded-2xl p-4 transition shadow-sm space-y-3">
+          ${contextHeader}
+          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold border ${platObj.badgeClass}">
+                  ${escapeHtml(item.platform)}
+                </span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800/80 text-slate-300 border border-slate-700/60">
+                  ${escapeHtml(item.format)}
+                </span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full font-medium border ${statusBadgeClasses}">
+                  ${escapeHtml(item.status)}
+                </span>
+                ${item.scheduledDate && !showContext ? `<span class="text-xs text-slate-400 font-medium ml-1">📅 ${item.scheduledDate}</span>` : ''}
+              </div>
+
+              <h4 class="text-base font-bold text-white pt-1">
+                ${escapeHtml(item.title)}
+              </h4>
+            </div>
+
+            <!-- Deliverable Actions -->
+            <div class="flex items-center gap-1 self-end sm:self-auto">
+              <button onclick="editDeliverable('${item.id}')" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition" title="Edit Content Item">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              </button>
+              <button onclick="confirmDeleteDeliverable('${item.id}')" class="p-1.5 hover:bg-red-500/20 rounded-lg text-slate-400 hover:text-red-400 transition" title="Delete Content Item">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cloud Asset URL Display Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs">
+            <div class="flex items-center gap-2 overflow-hidden flex-1">
+              <span class="text-slate-400 flex items-center gap-1 flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                Cloud Asset:
+              </span>
+              ${item.fileUrl ? `
+                <a href="${escapeHtml(item.fileUrl)}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline truncate max-w-sm sm:max-w-md font-mono text-[11px]">
+                  ${escapeHtml(item.fileUrl)}
+                </a>
+              ` : `
+                <span class="text-slate-600 italic">No cloud link attached (e.g. Dropbox / Drive link)</span>
+              `}
+            </div>
+            
+            ${item.fileUrl ? `
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                <button onclick="copyToClipboard('${escapeHtml(item.fileUrl)}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-[11px] transition">
+                  Copy Link
+                </button>
+                <a href="${escapeHtml(item.fileUrl)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded bg-indigo-600/90 hover:bg-indigo-600 text-white font-medium text-[11px] inline-flex items-center gap-1 transition">
+                  Open ↗
+                </a>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Specs and Details -->
+          <div class="space-y-1 text-xs">
+            ${item.specs ? `
+              <div class="text-slate-300 flex items-start gap-1.5">
+                <span class="text-slate-500 font-semibold uppercase text-[10px] tracking-wider min-w-[50px]">Specs:</span>
+                <span class="font-mono text-slate-300 bg-slate-800/60 px-1.5 py-0.5 rounded text-[11px]">${escapeHtml(item.specs)}</span>
+              </div>
+            ` : ''}
+            ${item.notes ? `
+              <div class="text-slate-400 flex items-start gap-1.5 pt-1">
+                <span class="text-slate-500 font-semibold uppercase text-[10px] tracking-wider min-w-[50px]">Notes:</span>
+                <span>${escapeHtml(item.notes)}</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- TAB 2: TIMELINE / MILESTONES VIEW ---
+    function renderTimelineView() {
+      const container = document.getElementById('timelineContainer');
+      const clientSelect = document.getElementById('timelineClientFilter');
+      
+      // Populate client dropdown
+      const selectedClient = clientSelect.value;
+      clientSelect.innerHTML = `<option value="ALL">All Clients</option>` + appData.clients.map(c => `
+        <option value="${c.id}" ${selectedClient === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>
+      `).join('');
+
+      let campaigns = appData.campaigns;
+      if (clientSelect.value !== 'ALL') {
+        const projectsInClient = appData.projects.filter(p => p.clientId === clientSelect.value).map(p => p.id);
+        campaigns = campaigns.filter(c => projectsInClient.includes(c.projectId));
+      }
+
+      if (campaigns.length === 0) {
+        container.innerHTML = `
+          <div class="py-16 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/30">
+            <h4 class="text-base font-semibold text-slate-300">No campaigns found for timeline tracking</h4>
+            <p class="text-xs text-slate-500 mt-1">Create campaigns to track Production, Launch, Monitor, and End dates.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = campaigns.map(cmp => {
+        const project = appData.projects.find(p => p.id === cmp.projectId);
+        const client = project ? appData.clients.find(c => c.id === project.clientId) : null;
+        const deliverablesCount = appData.deliverables.filter(d => d.campaignId === cmp.id).length;
+
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-indigo-950 text-indigo-400 border border-indigo-800/60">
+                  ${escapeHtml(client ? client.name : 'Unknown Client')} &bull; ${escapeHtml(project ? project.title : 'Project')}
+                </span>
+                <h3 class="text-lg font-bold text-white mt-1.5">${escapeHtml(cmp.title)}</h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs px-2.5 py-1 rounded-full font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                  Status: <strong class="text-white">${escapeHtml(cmp.status)}</strong>
+                </span>
+                <button onclick="navigate('deliverables', '${cmp.id}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition">
+                  Deliverables (${deliverablesCount})
+                </button>
+              </div>
+            </div>
+
+            <!-- Milestone Step Progress Line -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
+              
+              <!-- 1. Production -->
+              <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl relative overflow-hidden">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider">1. Production</span>
+                  <span class="text-xs">🔨</span>
+                </div>
+                <div class="text-sm font-semibold text-white">${formatDateNice(cmp.dateProduction)}</div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Asset drafting & creator prep</p>
+              </div>
+
+              <!-- 2. Launch -->
+              <div class="p-3 bg-emerald-950/20 border border-emerald-900/40 rounded-xl relative overflow-hidden">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">2. Launch</span>
+                  <span class="text-xs">🚀</span>
+                </div>
+                <div class="text-sm font-semibold text-white">${formatDateNice(cmp.dateLaunch)}</div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Live go-live across feeds</p>
+              </div>
+
+              <!-- 3. Monitor -->
+              <div class="p-3 bg-sky-950/20 border border-sky-900/40 rounded-xl relative overflow-hidden">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-bold text-sky-400 uppercase tracking-wider">3. Monitor</span>
+                  <span class="text-xs">📊</span>
+                </div>
+                <div class="text-sm font-semibold text-white">${formatDateNice(cmp.dateMonitor)}</div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Engagement, comments & stats</p>
+              </div>
+
+              <!-- 4. End Date -->
+              <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl relative overflow-hidden">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">4. End Date</span>
+                  <span class="text-xs">🏁</span>
+                </div>
+                <div class="text-sm font-semibold text-white">${formatDateNice(cmp.dateEnd)}</div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Wrap-up & client reporting</p>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- TAB 3: GLOBAL DELIVERABLES HUB ---
+    function renderGlobalHub() {
+      const grid = document.getElementById('globalHubGrid');
+      const platformFilter = document.getElementById('hubPlatformFilter').value;
+      const formatFilter = document.getElementById('hubFormatFilter').value;
+
+      let items = appData.deliverables;
+
+      if (platformFilter !== 'ALL') {
+        items = items.filter(d => d.platform === platformFilter);
+      }
+      if (formatFilter !== 'ALL') {
+        items = items.filter(d => d.format === formatFilter);
+      }
+
+      if (globalSearchQuery.trim()) {
+        const q = globalSearchQuery.toLowerCase();
+        items = items.filter(d => d.title.toLowerCase().includes(q) || (d.specs && d.specs.toLowerCase().includes(q)));
+      }
+
+      if (items.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/30">
+            <h4 class="text-base font-semibold text-slate-300">No content items match the current filters</h4>
+            <p class="text-xs text-slate-500 mt-1">Try resetting the platform or format filters.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = items.map(item => renderDeliverableCard(item, true)).join('');
+    }
+
+    /* ==========================================================================
+       7. CRUD FORM HANDLERS & MODALS
+       ========================================================================== */
+
+    // Global Modal togglers
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // --- CLIENT MODAL & FORM ---
+    function handleClientSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('clientId').value || 'c_' + Date.now();
+      const name = document.getElementById('clientName').value.trim();
+      const email = document.getElementById('clientEmail').value.trim();
+      const color = document.getElementById('clientColor').value;
+      const notes = document.getElementById('clientNotes').value.trim();
+
+      const existingIndex = appData.clients.findIndex(c => c.id === id);
+      if (existingIndex > -1) {
+        appData.clients[existingIndex] = { ...appData.clients[existingIndex], name, email, color, notes };
+        showToast("Client details updated!");
+      } else {
+        appData.clients.push({ id, name, email, color, notes });
+        showToast("New client created successfully!");
+      }
+
+      saveToStorage();
+      closeModal('clientModal');
+      document.getElementById('clientForm').reset();
+      document.getElementById('clientId').value = '';
+      refreshCurrentView();
+    }
+
+    function editClient(id) {
+      const client = appData.clients.find(c => c.id === id);
+      if (!client) return;
+      document.getElementById('clientId').value = client.id;
+      document.getElementById('clientName').value = client.name;
+      document.getElementById('clientEmail').value = client.email || '';
+      document.getElementById('clientColor').value = client.color || 'indigo';
+      document.getElementById('clientNotes').value = client.notes || '';
+      document.getElementById('clientModalTitle').innerText = "Edit Client Account";
+      openModal('clientModal');
+    }
+
+    function confirmDeleteClient(id) {
+      const client = appData.clients.find(c => c.id === id);
+      if (!client) return;
+
+      const subProjects = appData.projects.filter(p => p.clientId === id);
+      const subCampaigns = appData.campaigns.filter(c => subProjects.some(p => p.id === c.projectId));
+      const subDeliverables = appData.deliverables.filter(d => subCampaigns.some(c => c.id === d.campaignId));
+
+      showConfirmDialog(
+        `Delete "${client.name}"?`,
+        `This will permanently remove this client along with ${subProjects.length} projects, ${subCampaigns.length} campaigns, and ${subDeliverables.length} deliverables.`,
+        () => {
+          appData.clients = appData.clients.filter(c => c.id !== id);
+          appData.projects = appData.projects.filter(p => p.clientId !== id);
+          appData.campaigns = appData.campaigns.filter(c => !subProjects.some(p => p.id === c.projectId));
+          appData.deliverables = appData.deliverables.filter(d => !subCampaigns.some(c => c.id === d.campaignId));
+          saveToStorage();
+          navigate('clients');
+          showToast("Client and child items removed.");
+        }
+      );
+    }
+
+    // --- PROJECT MODAL & FORM ---
+    function renderPlatformCheckboxes() {
+      const cont = document.getElementById('projectPlatformCheckboxes');
+      cont.innerHTML = PLATFORMS_LIST.map(p => `
+        <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white">
+          <input type="checkbox" name="projectPlatforms" value="${p.name}" class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0">
+          <span>${p.name}</span>
+        </label>
+      `).join('');
+    }
+
+    function handleProjectSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('projectId').value || 'p_' + Date.now();
+      const title = document.getElementById('projectTitle').value.trim();
+      const goal = document.getElementById('projectGoal').value.trim();
+      const notes = document.getElementById('projectNotes').value.trim();
+
+      // Gather checked platforms
+      const checkboxes = document.querySelectorAll('input[name="projectPlatforms"]:checked');
+      const selectedPlatforms = Array.from(checkboxes).map(cb => cb.value);
+
+      const customPlatform = document.getElementById('projectCustomPlatform').value.trim();
+      if (customPlatform && !selectedPlatforms.includes(customPlatform)) {
+        selectedPlatforms.push(customPlatform);
+      }
+
+      const existingIndex = appData.projects.findIndex(p => p.id === id);
+      if (existingIndex > -1) {
+        appData.projects[existingIndex] = { ...appData.projects[existingIndex], title, goal, notes, platforms: selectedPlatforms };
+        showToast("Project updated!");
+      } else {
+        appData.projects.push({ id, clientId: currentClientId, title, goal, notes, platforms: selectedPlatforms });
+        showToast("Project added successfully!");
+      }
+
+      saveToStorage();
+      closeModal('projectModal');
+      document.getElementById('projectForm').reset();
+      document.getElementById('projectId').value = '';
+      refreshCurrentView();
+    }
+
+    function editProject(id) {
+      const proj = appData.projects.find(p => p.id === id);
+      if (!proj) return;
+      document.getElementById('projectId').value = proj.id;
+      document.getElementById('projectTitle').value = proj.title;
+      document.getElementById('projectGoal').value = proj.goal || '';
+      document.getElementById('projectNotes').value = proj.notes || '';
+      document.getElementById('projectCustomPlatform').value = '';
+
+      // Set platforms
+      const checkboxes = document.querySelectorAll('input[name="projectPlatforms"]');
+      checkboxes.forEach(cb => {
+        cb.checked = (proj.platforms || []).includes(cb.value);
+      });
+
+      document.getElementById('projectModalTitle').innerText = "Edit Project";
+      openModal('projectModal');
+    }
+
+    function confirmDeleteProject(id) {
+      const proj = appData.projects.find(p => p.id === id);
+      if (!proj) return;
+
+      const subCampaigns = appData.campaigns.filter(c => c.projectId === id);
+      const subDeliverables = appData.deliverables.filter(d => subCampaigns.some(c => c.id === d.campaignId));
+
+      showConfirmDialog(
+        `Delete Project "${proj.title}"?`,
+        `This will delete the project along with its ${subCampaigns.length} campaigns and ${subDeliverables.length} content deliverables.`,
+        () => {
+          appData.projects = appData.projects.filter(p => p.id !== id);
+          appData.campaigns = appData.campaigns.filter(c => c.projectId !== id);
+          appData.deliverables = appData.deliverables.filter(d => !subCampaigns.some(c => c.id === d.campaignId));
+          saveToStorage();
+          refreshCurrentView();
+          showToast("Project deleted.");
+        }
+      );
+    }
+
+    // --- CAMPAIGN MODAL & FORM ---
+    function handleCampaignSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('campaignId').value || 'cmp_' + Date.now();
+      const title = document.getElementById('campaignTitle').value.trim();
+      const status = document.getElementById('campaignStatus').value;
+      const objective = document.getElementById('campaignObjective').value.trim();
+
+      const dateProduction = document.getElementById('dateProduction').value;
+      const dateLaunch = document.getElementById('dateLaunch').value;
+      const dateMonitor = document.getElementById('dateMonitor').value;
+      const dateEnd = document.getElementById('dateEnd').value;
+
+      const existingIndex = appData.campaigns.findIndex(c => c.id === id);
+      if (existingIndex > -1) {
+        appData.campaigns[existingIndex] = {
+          ...appData.campaigns[existingIndex],
+          title, status, objective, dateProduction, dateLaunch, dateMonitor, dateEnd
+        };
+        showToast("Campaign updated!");
+      } else {
+        appData.campaigns.push({
+          id,
+          projectId: currentProjectId,
+          title, status, objective, dateProduction, dateLaunch, dateMonitor, dateEnd
+        });
+        showToast("Campaign wave created!");
+      }
+
+      saveToStorage();
+      closeModal('campaignModal');
+      document.getElementById('campaignForm').reset();
+      document.getElementById('campaignId').value = '';
+      refreshCurrentView();
+    }
+
+    function editCampaign(id) {
+      const cmp = appData.campaigns.find(c => c.id === id);
+      if (!cmp) return;
+      document.getElementById('campaignId').value = cmp.id;
+      document.getElementById('campaignTitle').value = cmp.title;
+      document.getElementById('campaignStatus').value = cmp.status || 'Draft';
+      document.getElementById('campaignObjective').value = cmp.objective || '';
+      document.getElementById('dateProduction').value = cmp.dateProduction || '';
+      document.getElementById('dateLaunch').value = cmp.dateLaunch || '';
+      document.getElementById('dateMonitor').value = cmp.dateMonitor || '';
+      document.getElementById('dateEnd').value = cmp.dateEnd || '';
+      document.getElementById('campaignModalTitle').innerText = "Edit Campaign Wave";
+      openModal('campaignModal');
+    }
+
+    function confirmDeleteCampaign(id) {
+      const cmp = appData.campaigns.find(c => c.id === id);
+      if (!cmp) return;
+
+      const subDeliverables = appData.deliverables.filter(d => d.campaignId === id);
+
+      showConfirmDialog(
+        `Delete Campaign "${cmp.title}"?`,
+        `This will delete the campaign and its ${subDeliverables.length} deliverables permanently.`,
+        () => {
+          appData.campaigns = appData.campaigns.filter(c => c.id !== id);
+          appData.deliverables = appData.deliverables.filter(d => d.campaignId !== id);
+          saveToStorage();
+          refreshCurrentView();
+          showToast("Campaign deleted.");
+        }
+      );
+    }
+
+    // --- DELIVERABLE MODAL & FORM ---
+    function populateDeliverablePlatformOptions() {
+      const select = document.getElementById('deliverablePlatform');
+      select.innerHTML = PLATFORMS_LIST.map(p => `
+        <option value="${p.name}">${p.name}</option>
+      `).join('');
+    }
+
+    function populateFilterPlatformOptions() {
+      const filter = document.getElementById('deliverablePlatformFilter');
+      const hubFilter = document.getElementById('hubPlatformFilter');
+      const optionsHtml = `<option value="ALL">All Platforms</option>` + PLATFORMS_LIST.map(p => `
+        <option value="${p.name}">${p.name}</option>
+      `).join('');
+      filter.innerHTML = optionsHtml;
+      hubFilter.innerHTML = optionsHtml;
+    }
+
+    function checkCustomFormat(val) {
+      const customRow = document.getElementById('customFormatRow');
+      if (val === 'Other') {
+        customRow.classList.remove('hidden');
+      } else {
+        customRow.classList.add('hidden');
+      }
+    }
+
+    function handleDeliverableSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('deliverableId').value || 'd_' + Date.now();
+      const platform = document.getElementById('deliverablePlatform').value;
+      let format = document.getElementById('deliverableFormat').value;
+      if (format === 'Other') {
+        const customFormat = document.getElementById('deliverableCustomFormat').value.trim();
+        if (customFormat) format = customFormat;
+      }
+
+      const title = document.getElementById('deliverableTitle').value.trim();
+      const fileUrl = document.getElementById('deliverableFileUrl').value.trim();
+      const specs = document.getElementById('deliverableSpecs').value.trim();
+      const status = document.getElementById('deliverableStatus').value;
+      const scheduledDate = document.getElementById('deliverableScheduledDate').value;
+      const notes = document.getElementById('deliverableNotes').value.trim();
+
+      const existingIndex = appData.deliverables.findIndex(d => d.id === id);
+      if (existingIndex > -1) {
+        appData.deliverables[existingIndex] = {
+          ...appData.deliverables[existingIndex],
+          platform, format, title, fileUrl, specs, status, scheduledDate, notes
+        };
+        showToast("Deliverable updated!");
+      } else {
+        appData.deliverables.push({
+          id,
+          campaignId: currentCampaignId,
+          platform, format, title, fileUrl, specs, status, scheduledDate, notes
+        });
+        showToast("Deliverable added to campaign log!");
+      }
+
+      saveToStorage();
+      closeModal('deliverableModal');
+      document.getElementById('deliverableForm').reset();
+      document.getElementById('deliverableId').value = '';
+      checkCustomFormat('Reel / Short-form Video');
+      refreshCurrentView();
+    }
+
+    function editDeliverable(id) {
+      const item = appData.deliverables.find(d => d.id === id);
+      if (!item) return;
+
+      document.getElementById('deliverableId').value = item.id;
+      document.getElementById('deliverablePlatform').value = item.platform;
+
+      // Handle standard vs custom format
+      const isPredefinedFormat = [
+        'Reel / Short-form Video',
+        'Long-form Video',
+        'Single Image Post',
+        'Carousel / Multi-image',
+        'Thread',
+        'Comment / Community Reply',
+        'Conversation / AMA / Live'
+      ].includes(item.format);
+
+      if (isPredefinedFormat) {
+        document.getElementById('deliverableFormat').value = item.format;
+        document.getElementById('deliverableCustomFormat').value = '';
+        checkCustomFormat(item.format);
+      } else {
+        document.getElementById('deliverableFormat').value = 'Other';
+        document.getElementById('deliverableCustomFormat').value = item.format;
+        checkCustomFormat('Other');
+      }
+
+      document.getElementById('deliverableTitle').value = item.title;
+      document.getElementById('deliverableFileUrl').value = item.fileUrl || '';
+      document.getElementById('deliverableSpecs').value = item.specs || '';
+      document.getElementById('deliverableStatus').value = item.status || 'Idea';
+      document.getElementById('deliverableScheduledDate').value = item.scheduledDate || '';
+      document.getElementById('deliverableNotes').value = item.notes || '';
+
+      document.getElementById('deliverableModalTitle').innerText = "Edit Content Deliverable";
+      openModal('deliverableModal');
+    }
+
+    function confirmDeleteDeliverable(id) {
+      const item = appData.deliverables.find(d => d.id === id);
+      if (!item) return;
+
+      showConfirmDialog(
+        `Delete Deliverable?`,
+        `Are you sure you want to delete "${item.title}"?`,
+        () => {
+          appData.deliverables = appData.deliverables.filter(d => d.id !== id);
+          saveToStorage();
+          refreshCurrentView();
+          if (currentMainTab === 'deliverables') renderGlobalHub();
+          showToast("Deliverable removed.");
+        }
+      );
+    }
+
+    /* ==========================================================================
+       8. UTILITY HELPERS & GLOBAL INTERACTIONS
+       ========================================================================== */
+    function handleGlobalSearch(query) {
+      globalSearchQuery = query;
+      if (currentMainTab === 'explorer') {
+        refreshCurrentView();
+      } else if (currentMainTab === 'milestones') {
+        renderTimelineView();
+      } else if (currentMainTab === 'deliverables') {
+        renderGlobalHub();
+      }
+    }
+
+    function toggleDropdown(id, force = null) {
+      const el = document.getElementById(id);
+      if (force !== null) {
+        force ? el.classList.remove('hidden') : el.classList.add('hidden');
+      } else {
+        el.classList.toggle('hidden');
+      }
+    }
+
+    // Close dropdowns on outside click
+    window.addEventListener('click', function(e) {
+      if (!e.target.closest('#dataOpsMenu') && !e.target.closest('button[onclick*="dataOpsMenu"]')) {
+        const menu = document.getElementById('dataOpsMenu');
+        if (menu) menu.classList.add('hidden');
+      }
+    });
+
+    function showToast(message, type = 'success') {
+      const cont = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `px-4 py-2.5 rounded-xl text-xs font-semibold shadow-2xl transition transform duration-300 translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2 border ${
+        type === 'error' ? 'bg-red-950 text-red-200 border-red-800' : 'bg-slate-900 text-white border-slate-700'
+      }`;
+      toast.innerHTML = `
+        <span class="${type === 'error' ? 'text-red-400' : 'text-indigo-400'} font-bold">&bull;</span>
+        <span>${escapeHtml(message)}</span>
+      `;
+      cont.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function showConfirmDialog(title, message, onConfirm) {
+      document.getElementById('confirmModalTitle').innerText = title;
+      document.getElementById('confirmModalMessage').innerText = message;
+      const modal = document.getElementById('confirmModal');
+      modal.classList.remove('hidden');
+
+      const executeBtn = document.getElementById('confirmExecuteBtn');
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+
+      const handleConfirm = () => {
+        cleanup();
+        modal.classList.add('hidden');
+        onConfirm();
+      };
+
+      const handleCancel = () => {
+        cleanup();
+        modal.classList.add('hidden');
+      };
+
+      function cleanup() {
+        executeBtn.removeEventListener('click', handleConfirm);
+        cancelBtn.removeEventListener('click', handleCancel);
+      }
+
+      executeBtn.addEventListener('click', handleConfirm);
+      cancelBtn.addEventListener('click', handleCancel);
+    }
+
+    function copyToClipboard(text) {
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = text;
+      dummy.select();
+      try {
+        document.execCommand("copy");
+        showToast("Storage link copied to clipboard!");
+      } catch (err) {
+        showToast("Unable to copy link.", "error");
+      }
+      document.body.removeChild(dummy);
+    }
+
+    function formatDateNice(dateStr) {
+      if (!dateStr) return 'Not set';
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      return dateStr;
+    }
+
+    function escapeHtml(string) {
+      if (!string) return '';
+      return String(string)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
